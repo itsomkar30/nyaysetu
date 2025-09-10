@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'Nyaysetu',
       theme: ThemeData(
         textTheme: GoogleFonts.poppinsTextTheme(),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
       ),
       home: UploadScreen(),
     );

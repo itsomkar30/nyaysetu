@@ -1,6 +1,70 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../core/services/file_picker.dart';
 
-class UploadScreen extends StatelessWidget {
+class UploadScreen extends StatefulWidget {
+  @override
+  State<UploadScreen> createState() => _UploadScreenState();
+}
+
+class _UploadScreenState extends State<UploadScreen> {
+  String? selectedFilePath;
+  String? selectedFileName;
+
+  Future<void> pickPDF() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+
+    if (result != null && result.files.single.path != null) {
+      final file = result.files.single;
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB limit
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('File too large. Please select a file under 10MB.'),
+          ),
+        );
+        return;
+      }
+      setState(() {
+        selectedFilePath = file.path!;
+        selectedFileName = file.name;
+      });
+    }
+  }
+
+  Future<void> _uploadPDF() async {
+    if (selectedFilePath != null) {
+      print('Uploading file: $selectedFilePath');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Uploading $selectedFileName...')));
+      try {
+        final response = await uploadPDF(selectedFilePath!);
+        print('Analysis Response: $response');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Upload successful! Document ID: ${response['documentId']}',
+            ),
+          ),
+        );
+      } catch (e) {
+        print('Upload error: $e');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Please select a file first')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,7 +99,10 @@ class UploadScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _FilePickerBox(),
+                    _FilePickerBox(
+                      onTap: pickPDF,
+                      selectedFileName: selectedFileName,
+                    ),
                     const SizedBox(height: 24),
                     _OrDivider(),
                     const SizedBox(height: 24),
@@ -44,8 +111,6 @@ class UploadScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -59,8 +124,9 @@ class UploadScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(40),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     // TODO: continue action
+                    await _uploadPDF();
                   },
                   child: Text(
                     'Continue',
@@ -81,13 +147,16 @@ class UploadScreen extends StatelessWidget {
 }
 
 class _FilePickerBox extends StatelessWidget {
+  final VoidCallback onTap;
+  final String? selectedFileName;
+
+  const _FilePickerBox({required this.onTap, this.selectedFileName});
+
   @override
   Widget build(BuildContext context) {
     final borderColor = Color(0xFF3B82F6);
     return GestureDetector(
-      onTap: () {
-        // TODO: open file picker
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         height: 225,
@@ -103,7 +172,7 @@ class _FilePickerBox extends StatelessWidget {
               Image.asset("assets/images/upload-icon.png", height: 100),
               const SizedBox(height: 8),
               Text(
-                'Tap to select PDF',
+                selectedFileName ?? 'Tap to select PDF',
                 style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
             ],
