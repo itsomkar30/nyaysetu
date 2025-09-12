@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../core/services/file_picker.dart';
+import '../../core/models/document.dart';
 
 class AnalysisScreen extends StatefulWidget {
   final String fileName;
@@ -23,6 +24,8 @@ class _AnalysisScreenState extends State<AnalysisScreen>
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
   bool isAnalysisComplete = false;
+  DocumentSummaryResponse? summaryData;
+  String? currentDocumentId;
 
   @override
   void initState() {
@@ -70,8 +73,16 @@ class _AnalysisScreenState extends State<AnalysisScreen>
 
   Future<void> _startAnalysis() async {
     try {
-      await uploadPDF(widget.filePath);
-      await Future.delayed(const Duration(seconds: 3)); // Simulate analysis time
+      // Upload PDF and get document ID
+      final uploadResponse = await uploadPDF(widget.filePath);
+      final docId = uploadResponse['documentId'] as String?;
+      
+      if (docId != null) {
+        currentDocumentId = docId;
+        // Fetch document summary
+        summaryData = await fetchDocumentSummary(docId);
+      }
+      
       setState(() {
         isAnalysisComplete = true;
       });
@@ -211,32 +222,106 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      _buildAnalysisCard(
-                        'Key Terms',
-                        'Important clauses and conditions identified',
-                        Icons.article_outlined,
-                        Colors.blue,
+                      GestureDetector(
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final clausesData = await fetchDocumentClauses(currentDocumentId!);
+                              print('Document Clauses:');
+                              print('Success: ${clausesData.success}');
+                              print('Document ID: ${clausesData.documentId}');
+                              for (int i = 0; i < clausesData.clauses.length; i++) {
+                                final clause = clausesData.clauses[i];
+                                print('Clause ${i + 1}:');
+                                print('  Title: ${clause.title}');
+                                print('  Description: ${clause.description}');
+                                print('  Benefits: ${clause.benefits}');
+                                print('  Risks: ${clause.risks}');
+                                print('  Importance: ${clause.importance}');
+                              }
+                            } catch (e) {
+                              print('Error fetching clauses: $e');
+                            }
+                          }
+                        },
+                        child: _buildAnalysisCard(
+                          'Key Terms',
+                          'Important clauses and conditions identified',
+                          Icons.article_outlined,
+                          Colors.blue,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      _buildAnalysisCard(
-                        'Risk Assessment',
-                        'Potential legal risks and concerns',
-                        Icons.warning_amber_outlined,
-                        Colors.orange,
+                      GestureDetector(
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final riskData = await fetchDocumentRisks(currentDocumentId!);
+                              print('Risk Assessment:');
+                              print('Success: ${riskData.success}');
+                              print('Document ID: ${riskData.documentId}');
+                              print('Overall Risk: ${riskData.riskAssessment.overallRisk}');
+                              print('Critical Points: ${riskData.riskAssessment.criticalPoints}');
+                              print('Recommendations: ${riskData.riskAssessment.recommendations}');
+                            } catch (e) {
+                              print('Error fetching risk assessment: $e');
+                            }
+                          }
+                        },
+                        child: _buildAnalysisCard(
+                          'Risk Assessment',
+                          'Potential legal risks and concerns',
+                          Icons.warning_amber_outlined,
+                          Colors.orange,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      _buildAnalysisCard(
-                        'Compliance Check',
-                        'Regulatory compliance verification',
-                        Icons.verified_outlined,
-                        Colors.green,
+                      GestureDetector(
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final termsData = await fetchDocumentTerms(currentDocumentId!);
+                              print('Document Key Terms:');
+                              print('Success: ${termsData.success}');
+                              print('Document ID: ${termsData.documentId}');
+                              for (int i = 0; i < termsData.keyTerms.length; i++) {
+                                final term = termsData.keyTerms[i];
+                                print('Term ${i + 1}:');
+                                print('  Term: ${term.term}');
+                                print('  Explanation: ${term.explanation}');
+                                print('  Impact: ${term.impact}');
+                              }
+                            } catch (e) {
+                              print('Error fetching terms: $e');
+                            }
+                          }
+                        },
+                        child: _buildAnalysisCard(
+                          'Compliance Check',
+                          'Regulatory compliance verification',
+                          Icons.verified_outlined,
+                          Colors.green,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      _buildAnalysisCard(
-                        'Summary',
-                        'Executive summary of the document',
-                        Icons.summarize_outlined,
-                        Colors.purple,
+                      GestureDetector(
+                        onTap: () {
+                          if (summaryData != null) {
+                            print('Document Summary:');
+                            print('Success: ${summaryData!.success}');
+                            print('Document ID: ${summaryData!.documentId}');
+                            print('Overview: ${summaryData!.summary.overview}');
+                            print('Document Type: ${summaryData!.summary.documentType}');
+                            print('Parties: ${summaryData!.summary.parties}');
+                            print('Purpose: ${summaryData!.summary.purpose}');
+                          }
+                        },
+                        child: _buildAnalysisCard(
+                          'Summary',
+                          'Executive summary of the document',
+                          Icons.summarize_outlined,
+                          Colors.purple,
+                        ),
                       ),
                     ],
                   ),
