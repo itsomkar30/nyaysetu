@@ -228,32 +228,45 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 32),
                       GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final clausesData = await fetchDocumentClauses(currentDocumentId!);
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) => 
-                                      ClausesScreen(clausesData: clausesData),
-                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                    const begin = Offset(1.0, 0.0);
-                                    const end = Offset.zero;
-                                    const curve = Curves.easeInOut;
-                                    var tween = Tween(begin: begin, end: end).chain(
-                                      CurveTween(curve: curve),
-                                    );
-                                    return SlideTransition(
-                                      position: animation.drive(tween),
-                                      child: child,
-                                    );
-                                  },
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => terms_screen.TermsScreen(
+                                termsData: terms_screen.KeyTermsResponse(
+                                  success: true,
+                                  documentId: '1757849820526',
+                                  keyTerms: [
+                                    terms_screen.KeyTerm(
+                                      term: 'Scheduled Land',
+                                      explanation: 'The land where the apartment building is being constructed.',
+                                      impact: 'Defines the location and extent of the property being sold.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Scheduled Apartment',
+                                      explanation: 'The specific apartment unit being sold to the buyer.',
+                                      impact: 'Specifies the exact subject matter of the sale.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Super built-up area',
+                                      explanation: 'The total area of the apartment, including common areas.',
+                                      impact: 'Determines the price and size of the apartment.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Undivided share in land',
+                                      explanation: 'A proportionate ownership interest in the land on which the building sits.',
+                                      impact: 'Grants the buyer a partial ownership of the land.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Force Majeure',
+                                      explanation: 'Unforeseeable circumstances beyond the control of either party, such as war or natural disasters.',
+                                      impact: 'Can excuse delays in construction.',
+                                    ),
+                                  ],
                                 ),
-                              );
-                            } catch (e) {
-                              print('Error fetching clauses: $e');
-                            }
-                          }
+                              ),
+                            ),
+                          );
                         },
                         child: _buildAnalysisCard(
                           'Key Terms',
@@ -297,45 +310,32 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => terms_screen.TermsScreen(
-                                termsData: terms_screen.KeyTermsResponse(
-                                  success: true,
-                                  documentId: '1757849820526',
-                                  keyTerms: [
-                                    terms_screen.KeyTerm(
-                                      term: 'Scheduled Land',
-                                      explanation: 'The land where the apartment building is being constructed.',
-                                      impact: 'Defines the location and extent of the property being sold.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Scheduled Apartment',
-                                      explanation: 'The specific apartment unit being sold to the buyer.',
-                                      impact: 'Specifies the exact subject matter of the sale.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Super built-up area',
-                                      explanation: 'The total area of the apartment, including common areas.',
-                                      impact: 'Determines the price and size of the apartment.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Undivided share in land',
-                                      explanation: 'A proportionate ownership interest in the land on which the building sits.',
-                                      impact: 'Grants the buyer a partial ownership of the land.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Force Majeure',
-                                      explanation: 'Unforeseeable circumstances beyond the control of either party, such as war or natural disasters.',
-                                      impact: 'Can excuse delays in construction.',
-                                    ),
-                                  ],
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final clausesData = await fetchDocumentClauses(currentDocumentId!);
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => 
+                                      ClausesScreen(clausesData: clausesData),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    const begin = Offset(1.0, 0.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.easeInOut;
+                                    var tween = Tween(begin: begin, end: end).chain(
+                                      CurveTween(curve: curve),
+                                    );
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
                                 ),
-                              ),
-                            ),
-                          );
+                              );
+                            } catch (e) {
+                              print('Error fetching clauses: $e');
+                            }
+                          }
                         },
                         child: _buildAnalysisCard(
                           'Compliance Check',
