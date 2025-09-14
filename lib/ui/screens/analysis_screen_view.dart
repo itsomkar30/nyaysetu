@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import '../../core/services/file_picker.dart';
 import '../../core/models/document.dart';
+import 'clauses_screen_view.dart';
+import 'risk_screen_view.dart' as risk_screen;
+import 'terms_screen_view.dart' as terms_screen;
+import 'summary_screen_view.dart' as summary_screen;
 
 class AnalysisScreen extends StatefulWidget {
   final String fileName;
@@ -227,18 +231,24 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                           if (currentDocumentId != null) {
                             try {
                               final clausesData = await fetchDocumentClauses(currentDocumentId!);
-                              print('Document Clauses:');
-                              print('Success: ${clausesData.success}');
-                              print('Document ID: ${clausesData.documentId}');
-                              for (int i = 0; i < clausesData.clauses.length; i++) {
-                                final clause = clausesData.clauses[i];
-                                print('Clause ${i + 1}:');
-                                print('  Title: ${clause.title}');
-                                print('  Description: ${clause.description}');
-                                print('  Benefits: ${clause.benefits}');
-                                print('  Risks: ${clause.risks}');
-                                print('  Importance: ${clause.importance}');
-                              }
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => 
+                                      ClausesScreen(clausesData: clausesData),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    const begin = Offset(1.0, 0.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.easeInOut;
+                                    var tween = Tween(begin: begin, end: end).chain(
+                                      CurveTween(curve: curve),
+                                    );
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
                             } catch (e) {
                               print('Error fetching clauses: $e');
                             }
@@ -253,20 +263,29 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final riskData = await fetchDocumentRisks(currentDocumentId!);
-                              print('Risk Assessment:');
-                              print('Success: ${riskData.success}');
-                              print('Document ID: ${riskData.documentId}');
-                              print('Overall Risk: ${riskData.riskAssessment.overallRisk}');
-                              print('Critical Points: ${riskData.riskAssessment.criticalPoints}');
-                              print('Recommendations: ${riskData.riskAssessment.recommendations}');
-                            } catch (e) {
-                              print('Error fetching risk assessment: $e');
-                            }
-                          }
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => risk_screen.RiskScreen(
+                                riskData: risk_screen.RiskAssessmentResponse(
+                                  overallRisk: 'Medium',
+                                  criticalPoints: [
+                                    'Buyer defaulting on payments.',
+                                    'Construction delays beyond the grace period.',
+                                    'Disputes over the quality of construction.',
+                                    'Lack of clarity regarding certain aspects of the agreement.',
+                                  ],
+                                  recommendations: [
+                                    'Both parties should seek independent legal advice before signing.',
+                                    'The payment schedule and penalty clauses should be carefully reviewed.',
+                                    'A detailed construction contract should be prepared and executed separately.',
+                                    'The agreement should be registered promptly to provide legal protection.',
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
                         },
                         child: _buildAnalysisCard(
                           'Risk Assessment',
@@ -277,24 +296,45 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final termsData = await fetchDocumentTerms(currentDocumentId!);
-                              print('Document Key Terms:');
-                              print('Success: ${termsData.success}');
-                              print('Document ID: ${termsData.documentId}');
-                              for (int i = 0; i < termsData.keyTerms.length; i++) {
-                                final term = termsData.keyTerms[i];
-                                print('Term ${i + 1}:');
-                                print('  Term: ${term.term}');
-                                print('  Explanation: ${term.explanation}');
-                                print('  Impact: ${term.impact}');
-                              }
-                            } catch (e) {
-                              print('Error fetching terms: $e');
-                            }
-                          }
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => terms_screen.TermsScreen(
+                                termsData: terms_screen.KeyTermsResponse(
+                                  success: true,
+                                  documentId: '1757849820526',
+                                  keyTerms: [
+                                    terms_screen.KeyTerm(
+                                      term: 'Scheduled Land',
+                                      explanation: 'The land where the apartment building is being constructed.',
+                                      impact: 'Defines the location and extent of the property being sold.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Scheduled Apartment',
+                                      explanation: 'The specific apartment unit being sold to the buyer.',
+                                      impact: 'Specifies the exact subject matter of the sale.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Super built-up area',
+                                      explanation: 'The total area of the apartment, including common areas.',
+                                      impact: 'Determines the price and size of the apartment.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Undivided share in land',
+                                      explanation: 'A proportionate ownership interest in the land on which the building sits.',
+                                      impact: 'Grants the buyer a partial ownership of the land.',
+                                    ),
+                                    terms_screen.KeyTerm(
+                                      term: 'Force Majeure',
+                                      explanation: 'Unforeseeable circumstances beyond the control of either party, such as war or natural disasters.',
+                                      impact: 'Can excuse delays in construction.',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
                         },
                         child: _buildAnalysisCard(
                           'Compliance Check',
@@ -306,15 +346,23 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () {
-                          if (summaryData != null) {
-                            print('Document Summary:');
-                            print('Success: ${summaryData!.success}');
-                            print('Document ID: ${summaryData!.documentId}');
-                            print('Overview: ${summaryData!.summary.overview}');
-                            print('Document Type: ${summaryData!.summary.documentType}');
-                            print('Parties: ${summaryData!.summary.parties}');
-                            print('Purpose: ${summaryData!.summary.purpose}');
-                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => summary_screen.SummaryScreen(
+                                summaryData: summary_screen.DocumentSummaryResponse(
+                                  success: true,
+                                  documentId: '1757849820526',
+                                  summary: summary_screen.Summary(
+                                    overview: 'This is an Agreement of Sale for a residential apartment in a multi-unit building named \'Mayflower Heights\' under construction. The vendor, M/s. Alpine Estates, a registered partnership firm, agrees to sell, and the buyer agrees to purchase, a specific apartment along with a proportionate undivided share in the land and a parking space.',
+                                    documentType: 'Agreement of Sale',
+                                    parties: 'M/s. Alpine Estates (Vendor) and Mr. [Buyer\'s Name] (Buyer)',
+                                    purpose: 'To legally document the sale of a residential apartment and associated land share and parking space in an under-construction building.',
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
                         },
                         child: _buildAnalysisCard(
                           'Summary',
