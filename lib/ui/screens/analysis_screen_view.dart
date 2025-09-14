@@ -6,6 +6,7 @@ import 'clauses_screen_view.dart';
 import 'risk_screen_view.dart' as risk_screen;
 import 'terms_screen_view.dart' as terms_screen;
 import 'summary_screen_view.dart' as summary_screen;
+import 'chat_screen_view.dart';
 
 class AnalysisScreen extends StatefulWidget {
   final String fileName;
@@ -373,6 +374,53 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                     ],
                   ),
+                ),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                        documentId: currentDocumentId ?? '1757849820526',
+                      ),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'Have any questions for your document? Ask in chat',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
                 ),
               ),
             ),
