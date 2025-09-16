@@ -1,30 +1,6 @@
 import 'package:flutter/material.dart';
 
-class DocumentSummaryResponse {
-  final bool success;
-  final String documentId;
-  final Summary summary;
-
-  DocumentSummaryResponse({
-    required this.success,
-    required this.documentId,
-    required this.summary,
-  });
-}
-
-class Summary {
-  final String overview;
-  final String documentType;
-  final String parties;
-  final String purpose;
-
-  Summary({
-    required this.overview,
-    required this.documentType,
-    required this.parties,
-    required this.purpose,
-  });
-}
+import '../../../core/models/document.dart';
 
 class SummaryScreen extends StatefulWidget {
   final DocumentSummaryResponse summaryData;

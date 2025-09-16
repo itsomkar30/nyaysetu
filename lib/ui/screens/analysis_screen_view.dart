@@ -228,45 +228,22 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 32),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => terms_screen.TermsScreen(
-                                termsData: terms_screen.KeyTermsResponse(
-                                  success: true,
-                                  documentId: '1757849820526',
-                                  keyTerms: [
-                                    terms_screen.KeyTerm(
-                                      term: 'Scheduled Land',
-                                      explanation: 'The land where the apartment building is being constructed.',
-                                      impact: 'Defines the location and extent of the property being sold.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Scheduled Apartment',
-                                      explanation: 'The specific apartment unit being sold to the buyer.',
-                                      impact: 'Specifies the exact subject matter of the sale.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Super built-up area',
-                                      explanation: 'The total area of the apartment, including common areas.',
-                                      impact: 'Determines the price and size of the apartment.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Undivided share in land',
-                                      explanation: 'A proportionate ownership interest in the land on which the building sits.',
-                                      impact: 'Grants the buyer a partial ownership of the land.',
-                                    ),
-                                    terms_screen.KeyTerm(
-                                      term: 'Force Majeure',
-                                      explanation: 'Unforeseeable circumstances beyond the control of either party, such as war or natural disasters.',
-                                      impact: 'Can excuse delays in construction.',
-                                    ),
-                                  ],
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final termsData = await fetchDocumentTerms(currentDocumentId!);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => terms_screen.TermsScreen(
+                                    termsData: termsData,
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
+                              );
+                            } catch (e) {
+                              print('Error fetching terms: $e');
+                            }
+                          }
                         },
                         child: _buildAnalysisCard(
                           'Key Terms',
@@ -277,29 +254,22 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       ),
                       const SizedBox(height: 16),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => risk_screen.RiskScreen(
-                                riskData: risk_screen.RiskAssessmentResponse(
-                                  overallRisk: 'Medium',
-                                  criticalPoints: [
-                                    'Buyer defaulting on payments.',
-                                    'Construction delays beyond the grace period.',
-                                    'Disputes over the quality of construction.',
-                                    'Lack of clarity regarding certain aspects of the agreement.',
-                                  ],
-                                  recommendations: [
-                                    'Both parties should seek independent legal advice before signing.',
-                                    'The payment schedule and penalty clauses should be carefully reviewed.',
-                                    'A detailed construction contract should be prepared and executed separately.',
-                                    'The agreement should be registered promptly to provide legal protection.',
-                                  ],
+                        onTap: () async {
+                          if (currentDocumentId != null) {
+                            try {
+                              final riskData = await fetchDocumentRisks(currentDocumentId!);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => risk_screen.RiskScreen(
+                                    riskData: riskData,
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
+                              );
+                            } catch (e) {
+                              print('Error fetching risks: $e');
+                            }
+                          }
                         },
                         child: _buildAnalysisCard(
                           'Risk Assessment',
@@ -347,23 +317,16 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => summary_screen.SummaryScreen(
-                                summaryData: summary_screen.DocumentSummaryResponse(
-                                  success: true,
-                                  documentId: '1757849820526',
-                                  summary: summary_screen.Summary(
-                                    overview: 'This is an Agreement of Sale for a residential apartment in a multi-unit building named \'Mayflower Heights\' under construction. The vendor, M/s. Alpine Estates, a registered partnership firm, agrees to sell, and the buyer agrees to purchase, a specific apartment along with a proportionate undivided share in the land and a parking space.',
-                                    documentType: 'Agreement of Sale',
-                                    parties: 'M/s. Alpine Estates (Vendor) and Mr. [Buyer\'s Name] (Buyer)',
-                                    purpose: 'To legally document the sale of a residential apartment and associated land share and parking space in an under-construction building.',
-                                  ),
+                          if (summaryData != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => summary_screen.SummaryScreen(
+                                  summaryData: summaryData!,
                                 ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: _buildAnalysisCard(
                           'Summary',
@@ -392,7 +355,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChatScreen(
-                        documentId: currentDocumentId ?? '1757849820526',
+                        documentId: currentDocumentId ?? 'No document available',
                       ),
                     ),
                   );

@@ -1,28 +1,6 @@
 import 'package:flutter/material.dart';
 
-class KeyTermsResponse {
-  final bool success;
-  final String documentId;
-  final List<KeyTerm> keyTerms;
-
-  KeyTermsResponse({
-    required this.success,
-    required this.documentId,
-    required this.keyTerms,
-  });
-}
-
-class KeyTerm {
-  final String term;
-  final String explanation;
-  final String impact;
-
-  KeyTerm({
-    required this.term,
-    required this.explanation,
-    required this.impact,
-  });
-}
+import '../../../core/models/document.dart';
 
 class TermsScreen extends StatefulWidget {
   final KeyTermsResponse termsData;

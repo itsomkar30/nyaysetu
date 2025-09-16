@@ -1,16 +1,6 @@
 import 'package:flutter/material.dart';
 
-class RiskAssessmentResponse {
-  final String overallRisk;
-  final List<String> criticalPoints;
-  final List<String> recommendations;
-
-  RiskAssessmentResponse({
-    required this.overallRisk,
-    required this.criticalPoints,
-    required this.recommendations,
-  });
-}
+import '../../../core/models/document.dart';
 
 class RiskScreen extends StatefulWidget {
   final RiskAssessmentResponse riskData;
@@ -133,7 +123,7 @@ class _RiskScreenState extends State<RiskScreen>
                             ),
                           ),
                           Text(
-                            'Overall Risk: ${widget.riskData.overallRisk}',
+                            'Overall Risk: ${widget.riskData.riskAssessment.overallRisk}',
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.9),
                               fontSize: 16,
@@ -239,7 +229,7 @@ class _RiskScreenState extends State<RiskScreen>
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
-                children: widget.riskData.criticalPoints
+                children: widget.riskData.riskAssessment.criticalPoints
                     .map((point) => _buildListItem(point, Colors.red))
                     .toList(),
               ),
@@ -306,7 +296,7 @@ class _RiskScreenState extends State<RiskScreen>
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
-                children: widget.riskData.recommendations
+                children: widget.riskData.riskAssessment.recommendations
                     .map((recommendation) => _buildListItem(recommendation, Colors.green))
                     .toList(),
               ),
