@@ -1,12 +1,15 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../../core/services/file_picker.dart';
+
 import '../../core/models/document.dart';
+import '../../core/services/file_picker.dart';
+import 'chat_screen_view.dart';
 import 'clauses_screen_view.dart';
 import 'risk_screen_view.dart' as risk_screen;
-import 'terms_screen_view.dart' as terms_screen;
 import 'summary_screen_view.dart' as summary_screen;
-import 'chat_screen_view.dart';
+import 'terms_screen_view.dart' as terms_screen;
 
 class AnalysisScreen extends StatefulWidget {
   final String fileName;
@@ -47,24 +50,19 @@ class _AnalysisScreenState extends State<AnalysisScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, -1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
 
     _slideController.forward();
     Future.delayed(const Duration(milliseconds: 200), () {
       _fadeController.forward();
     });
-    
+
     // Start analysis process
     _startAnalysis();
   }
@@ -81,13 +79,13 @@ class _AnalysisScreenState extends State<AnalysisScreen>
       // Upload PDF and get document ID
       final uploadResponse = await uploadPDF(widget.filePath);
       final docId = uploadResponse['documentId'] as String?;
-      
+
       if (docId != null) {
         currentDocumentId = docId;
         // Fetch document summary
         summaryData = await fetchDocumentSummary(docId);
       }
-      
+
       setState(() {
         isAnalysisComplete = true;
       });
@@ -104,309 +102,459 @@ class _AnalysisScreenState extends State<AnalysisScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            SlideTransition(
-              position: _slideAnimation,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
+            Column(
+              children: [
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 500),
-                        child: isAnalysisComplete
-                            ? Image.asset(
-                                "assets/images/upload-icon.png",
-                                height: 40,
-                                width: 40,
-                                key: const ValueKey('upload-icon'),
-                              )
-                            : Lottie.asset(
-                                'assets/lotties/loading.json',
-                                height: 40,
-                                width: 40,
-                                fit: BoxFit.cover,
-                                key: const ValueKey('loading'),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child:
+                                isAnalysisComplete
+                                    ? Image.asset(
+                                      "assets/images/upload-icon.png",
+                                      height: 40,
+                                      width: 40,
+                                      key: const ValueKey('upload-icon'),
+                                    )
+                                    : Lottie.asset(
+                                      'assets/lotties/loading.json',
+                                      height: 40,
+                                      width: 40,
+                                      fit: BoxFit.cover,
+                                      key: const ValueKey('loading'),
+                                    ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.fileName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                      ),
+                              const SizedBox(height: 4),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: Text(
+                                  isAnalysisComplete
+                                      ? 'Analysis completed successfully'
+                                      : 'Analyzing document...',
+                                  key: ValueKey(isAnalysisComplete),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child:
+                              isAnalysisComplete
+                                  ? Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                    size: 24,
+                                    key: const ValueKey('check'),
+                                  )
+                                  : SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        const Color(0xFF3B82F6),
+                                      ),
+                                    ),
+                                    key: const ValueKey('progress'),
+                                  ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
+                  ),
+                ),
+                Expanded(
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            widget.fileName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                          const Text(
+                            'Document Analysis',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
                               color: Colors.black87,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: Text(
-                              isAnalysisComplete
-                                  ? 'Analysis completed successfully'
-                                  : 'Analyzing document...',
-                              key: ValueKey(isAnalysisComplete),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'AI-powered insights and risk assessment',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey[600],
                             ),
+                          ),
+                          const SizedBox(height: 32),
+                          Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (currentDocumentId != null) {
+                                    try {
+                                      final termsData =
+                                          await fetchDocumentTerms(
+                                            currentDocumentId!,
+                                          );
+                                      if (termsData.keyTerms.isEmpty) {
+                                        _showDocumentNotFoundDialog();
+                                        return;
+                                      }
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  terms_screen.TermsScreen(
+                                                    termsData: termsData,
+                                                  ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      _showDocumentNotFoundDialog();
+                                    }
+                                  } else {
+                                    _showDocumentNotFoundDialog();
+                                  }
+                                },
+                                child: _buildAnalysisCard(
+                                  'Key Terms',
+                                  'Important clauses and conditions identified',
+                                  Icons.article_outlined,
+                                  Colors.blue,
+                                ),
+                              ),
+                              if (!isAnalysisComplete)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 3,
+                                      sigmaY: 3,
+                                    ),
+                                    child: Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (currentDocumentId != null) {
+                                    try {
+                                      final riskData = await fetchDocumentRisks(
+                                        currentDocumentId!,
+                                      );
+                                      if (riskData
+                                              .riskAssessment
+                                              .criticalPoints
+                                              .isEmpty &&
+                                          riskData
+                                              .riskAssessment
+                                              .recommendations
+                                              .isEmpty) {
+                                        _showDocumentNotFoundDialog();
+                                        return;
+                                      }
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) =>
+                                                  risk_screen.RiskScreen(
+                                                    riskData: riskData,
+                                                  ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      _showDocumentNotFoundDialog();
+                                    }
+                                  } else {
+                                    _showDocumentNotFoundDialog();
+                                  }
+                                },
+                                child: _buildAnalysisCard(
+                                  'Risk Assessment',
+                                  'Potential legal risks and concerns',
+                                  Icons.warning_amber_outlined,
+                                  Colors.orange,
+                                ),
+                              ),
+                              if (!isAnalysisComplete)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 3,
+                                      sigmaY: 3,
+                                    ),
+                                    child: Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () async {
+                                  if (currentDocumentId != null) {
+                                    try {
+                                      final clausesData =
+                                          await fetchDocumentClauses(
+                                            currentDocumentId!,
+                                          );
+                                      if (clausesData.clauses.isEmpty) {
+                                        _showDocumentNotFoundDialog();
+                                        return;
+                                      }
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => ClausesScreen(
+                                                clausesData: clausesData,
+                                              ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      _showDocumentNotFoundDialog();
+                                    }
+                                  } else {
+                                    _showDocumentNotFoundDialog();
+                                  }
+                                },
+                                child: _buildAnalysisCard(
+                                  'Compliance Check',
+                                  'Regulatory compliance verification',
+                                  Icons.verified_outlined,
+                                  Colors.green,
+                                ),
+                              ),
+                              if (!isAnalysisComplete)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 3,
+                                      sigmaY: 3,
+                                    ),
+                                    child: Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  if (summaryData != null &&
+                                      summaryData!
+                                          .summary
+                                          .overview
+                                          .isNotEmpty) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                summary_screen.SummaryScreen(
+                                                  summaryData: summaryData!,
+                                                ),
+                                      ),
+                                    );
+                                  } else {
+                                    _showDocumentNotFoundDialog();
+                                  }
+                                },
+                                child: _buildAnalysisCard(
+                                  'Summary',
+                                  'Executive summary of the document',
+                                  Icons.summarize_outlined,
+                                  Colors.purple,
+                                ),
+                              ),
+                              if (!isAnalysisComplete)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 3,
+                                      sigmaY: 3,
+                                    ),
+                                    child: Container(
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: isAnalysisComplete
-                          ? Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 24,
-                              key: const ValueKey('check'),
-                            )
-                          : SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  const Color(0xFF3B82F6),
-                                ),
-                              ),
-                              key: const ValueKey('progress'),
-                            ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Document Analysis',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                Stack(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
                         ),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'AI-powered insights and risk assessment',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final termsData = await fetchDocumentTerms(currentDocumentId!);
-                              if (termsData.keyTerms.isEmpty) {
-                                _showDocumentNotFoundDialog();
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => terms_screen.TermsScreen(
-                                    termsData: termsData,
-                                  ),
-                                ),
-                              );
-                            } catch (e) {
-                              _showDocumentNotFoundDialog();
-                            }
-                          } else {
-                            _showDocumentNotFoundDialog();
-                          }
-                        },
-                        child: _buildAnalysisCard(
-                          'Key Terms',
-                          'Important clauses and conditions identified',
-                          Icons.article_outlined,
-                          Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final riskData = await fetchDocumentRisks(currentDocumentId!);
-                              if (riskData.riskAssessment.criticalPoints.isEmpty && riskData.riskAssessment.recommendations.isEmpty) {
-                                _showDocumentNotFoundDialog();
-                                return;
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => risk_screen.RiskScreen(
-                                    riskData: riskData,
-                                  ),
-                                ),
-                              );
-                            } catch (e) {
-                              _showDocumentNotFoundDialog();
-                            }
-                          } else {
-                            _showDocumentNotFoundDialog();
-                          }
-                        },
-                        child: _buildAnalysisCard(
-                          'Risk Assessment',
-                          'Potential legal risks and concerns',
-                          Icons.warning_amber_outlined,
-                          Colors.orange,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () async {
-                          if (currentDocumentId != null) {
-                            try {
-                              final clausesData = await fetchDocumentClauses(currentDocumentId!);
-                              if (clausesData.clauses.isEmpty) {
-                                _showDocumentNotFoundDialog();
-                                return;
-                              }
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation, secondaryAnimation) => 
-                                      ClausesScreen(clausesData: clausesData),
-                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                    const begin = Offset(1.0, 0.0);
-                                    const end = Offset.zero;
-                                    const curve = Curves.easeInOut;
-                                    var tween = Tween(begin: begin, end: end).chain(
-                                      CurveTween(curve: curve),
-                                    );
-                                    return SlideTransition(
-                                      position: animation.drive(tween),
-                                      child: child,
-                                    );
-                                  },
-                                ),
-                              );
-                            } catch (e) {
-                              _showDocumentNotFoundDialog();
-                            }
-                          } else {
-                            _showDocumentNotFoundDialog();
-                          }
-                        },
-                        child: _buildAnalysisCard(
-                          'Compliance Check',
-                          'Regulatory compliance verification',
-                          Icons.verified_outlined,
-                          Colors.green,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      GestureDetector(
+                      child: GestureDetector(
                         onTap: () {
-                          if (summaryData != null && summaryData!.summary.overview.isNotEmpty) {
+                          if (currentDocumentId != null) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => summary_screen.SummaryScreen(
-                                  summaryData: summaryData!,
-                                ),
+                                builder:
+                                    (context) => ChatScreen(
+                                      documentId: currentDocumentId!,
+                                    ),
                               ),
                             );
-                          } else {
-                            _showDocumentNotFoundDialog();
                           }
                         },
-                        child: _buildAnalysisCard(
-                          'Summary',
-                          'Executive summary of the document',
-                          Icons.summarize_outlined,
-                          Colors.purple,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.chat_bubble_outline,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                'Have any questions for your document? Ask in chat',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
+                    if (!isAnalysisComplete)
+                      Container(
+                        margin: const EdgeInsets.all(24),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                            child: Container(
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            if (!isAnalysisComplete)
+              Positioned(
+                top: 350,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("Analyzing", style: TextStyle(fontSize: 24)),
+                      Lottie.asset(
+                        'assets/lotties/progress-line.json',
+                        width: double.infinity,
+                        height: 160,
+                        fit: BoxFit.contain,
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF1E40AF)],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        documentId: currentDocumentId ?? 'No document available',
-                      ),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.chat_bubble_outline,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        'Have any questions for your document? Ask in chat',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -418,7 +566,9 @@ class _AnalysisScreenState extends State<AnalysisScreen>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           icon: Icon(Icons.error_outline, color: Colors.orange, size: 48),
           title: const Text(
             'Document not found',
@@ -434,8 +584,13 @@ class _AnalysisScreenState extends State<AnalysisScreen>
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               child: const Text('OK'),
             ),
@@ -491,19 +646,12 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
           ),
-          Icon(
-            Icons.arrow_forward_ios,
-            color: Colors.grey[400],
-            size: 16,
-          ),
+          Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
         ],
       ),
     );
