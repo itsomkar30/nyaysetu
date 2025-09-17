@@ -232,6 +232,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                           if (currentDocumentId != null) {
                             try {
                               final termsData = await fetchDocumentTerms(currentDocumentId!);
+                              if (termsData.keyTerms.isEmpty) {
+                                _showDocumentNotFoundDialog();
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -241,8 +245,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                                 ),
                               );
                             } catch (e) {
-                              print('Error fetching terms: $e');
+                              _showDocumentNotFoundDialog();
                             }
+                          } else {
+                            _showDocumentNotFoundDialog();
                           }
                         },
                         child: _buildAnalysisCard(
@@ -258,6 +264,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                           if (currentDocumentId != null) {
                             try {
                               final riskData = await fetchDocumentRisks(currentDocumentId!);
+                              if (riskData.riskAssessment.criticalPoints.isEmpty && riskData.riskAssessment.recommendations.isEmpty) {
+                                _showDocumentNotFoundDialog();
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -267,8 +277,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                                 ),
                               );
                             } catch (e) {
-                              print('Error fetching risks: $e');
+                              _showDocumentNotFoundDialog();
                             }
+                          } else {
+                            _showDocumentNotFoundDialog();
                           }
                         },
                         child: _buildAnalysisCard(
@@ -284,6 +296,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                           if (currentDocumentId != null) {
                             try {
                               final clausesData = await fetchDocumentClauses(currentDocumentId!);
+                              if (clausesData.clauses.isEmpty) {
+                                _showDocumentNotFoundDialog();
+                                return;
+                              }
                               Navigator.of(context).push(
                                 PageRouteBuilder(
                                   pageBuilder: (context, animation, secondaryAnimation) => 
@@ -303,8 +319,10 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                                 ),
                               );
                             } catch (e) {
-                              print('Error fetching clauses: $e');
+                              _showDocumentNotFoundDialog();
                             }
+                          } else {
+                            _showDocumentNotFoundDialog();
                           }
                         },
                         child: _buildAnalysisCard(
@@ -317,7 +335,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                       const SizedBox(height: 16),
                       GestureDetector(
                         onTap: () {
-                          if (summaryData != null) {
+                          if (summaryData != null && summaryData!.summary.overview.isNotEmpty) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -326,6 +344,8 @@ class _AnalysisScreenState extends State<AnalysisScreen>
                                 ),
                               ),
                             );
+                          } else {
+                            _showDocumentNotFoundDialog();
                           }
                         },
                         child: _buildAnalysisCard(
@@ -390,6 +410,38 @@ class _AnalysisScreenState extends State<AnalysisScreen>
           ],
         ),
       ),
+    );
+  }
+
+  void _showDocumentNotFoundDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          icon: Icon(Icons.error_outline, color: Colors.orange, size: 48),
+          title: const Text(
+            'Document not found',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+          ),
+          content: const Text(
+            'Document precessing or no data available for this document.',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
