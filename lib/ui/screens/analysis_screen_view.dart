@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -31,6 +32,7 @@ class _AnalysisScreenState extends State<AnalysisScreen>
   late AnimationController _fadeController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  late List<CameraDescription> _cameras;
   bool isAnalysisComplete = false;
   DocumentSummaryResponse? summaryData;
   String? currentDocumentId;
