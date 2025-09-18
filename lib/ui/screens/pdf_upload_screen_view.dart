@@ -13,6 +13,7 @@ class _UploadScreenState extends State<UploadScreen>
     with TickerProviderStateMixin {
   String? selectedFilePath;
   String? selectedFileName;
+  String? cameraImagePath;
   late AnimationController _buttonController;
   late Animation<double> _buttonAnimation;
 
@@ -55,19 +56,32 @@ class _UploadScreenState extends State<UploadScreen>
       setState(() {
         selectedFilePath = file.path!;
         selectedFileName = file.name;
+        cameraImagePath = null;
       });
     }
   }
 
   Future<void> _uploadPDF() async {
+    String? filePath;
+    String? fileName;
+    
     if (selectedFilePath != null) {
+      filePath = selectedFilePath;
+      fileName = selectedFileName!;
+    } else if (cameraImagePath != null) {
+      filePath = cameraImagePath;
+      // fileName = 'Camera_Image_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      fileName = 'sam_image.pdf';
+    }
+    
+    if (filePath != null && fileName != null) {
       // Navigate immediately to analysis screen
       Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder:
               (context, animation, secondaryAnimation) => AnalysisScreen(
-                fileName: selectedFileName!,
-                filePath: selectedFilePath!,
+                fileName: fileName!,
+                filePath: filePath!,
               ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
@@ -94,7 +108,7 @@ class _UploadScreenState extends State<UploadScreen>
     } else {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Please select a file first')));
+      ).showSnackBar(SnackBar(content: Text('Please select a file or take a photo first')));
     }
   }
 
@@ -135,11 +149,21 @@ class _UploadScreenState extends State<UploadScreen>
                     _FilePickerBox(
                       onTap: pickPDF,
                       selectedFileName: selectedFileName,
+                      hasCameraImage: cameraImagePath != null,
                     ),
                     const SizedBox(height: 24),
                     _OrDivider(),
                     const SizedBox(height: 24),
-                    _CameraButton(),
+                    _CameraButton(
+                      hasCameraImage: cameraImagePath != null,
+                      onCameraResult: (String imagePath) {
+                        setState(() {
+                          cameraImagePath = imagePath;
+                          selectedFilePath = null;
+                          selectedFileName = null;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -192,8 +216,9 @@ class _UploadScreenState extends State<UploadScreen>
 class _FilePickerBox extends StatefulWidget {
   final VoidCallback onTap;
   final String? selectedFileName;
+  final bool hasCameraImage;
 
-  const _FilePickerBox({required this.onTap, this.selectedFileName});
+  const _FilePickerBox({required this.onTap, this.selectedFileName, this.hasCameraImage = false});
 
   @override
   State<_FilePickerBox> createState() => _FilePickerBoxState();
@@ -279,7 +304,8 @@ class _FilePickerBoxState extends State<_FilePickerBox>
                       duration: const Duration(milliseconds: 300),
                       style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                       child: Text(
-                        widget.selectedFileName ?? 'Tap to select PDF',
+                        widget.selectedFileName ?? 
+                        (widget.hasCameraImage ? 'Camera image selected' : 'Tap to select PDF'),
                       ),
                     ),
                   ],
@@ -313,6 +339,11 @@ class _OrDivider extends StatelessWidget {
 }
 
 class _CameraButton extends StatefulWidget {
+  final bool hasCameraImage;
+  final Function(String) onCameraResult;
+  
+  const _CameraButton({this.hasCameraImage = false, required this.onCameraResult});
+  
   @override
   State<_CameraButton> createState() => _CameraButtonState();
 }
@@ -363,16 +394,18 @@ class _CameraButtonState extends State<_CameraButton>
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {
-                  // TODO: open camera
-                  Navigator.push(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => CameraScreen()),
                   );
+                  if (result != null) {
+                    widget.onCameraResult(result);
+                  }
                 },
                 icon: Icon(Icons.camera_alt, color: green),
                 label: Text(
-                  'Open Camera & Take Photo',
+                  widget.hasCameraImage ? 'Photo Captured ✓' : 'Open Camera & Take Photo',
                   style: TextStyle(
                     color: green,
                     fontSize: 16,

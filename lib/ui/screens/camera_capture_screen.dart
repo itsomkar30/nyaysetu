@@ -78,8 +78,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   ),
                 );
 
-                if (result != null && result == true) {
-                  Navigator.pop(context, file);
+                if (result != null) {
+                  Navigator.pop(context, result);
                 }
               },
               child: Container(

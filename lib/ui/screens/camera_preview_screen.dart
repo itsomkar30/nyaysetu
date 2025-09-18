@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/services/image_to_pdf_service.dart';
 
 class PreviewScreen extends StatelessWidget {
   final String imagePath;
@@ -16,36 +16,6 @@ class PreviewScreen extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Container(
-            //   padding: const EdgeInsets.all(20),
-            //   decoration: BoxDecoration(
-            //     color: Colors.white,
-            //     boxShadow: [
-            //       BoxShadow(
-            //         color: Colors.grey.withOpacity(0.1),
-            //         blurRadius: 10,
-            //         offset: const Offset(0, 2),
-            //       ),
-            //     ],
-            //   ),
-            //   child: Row(
-            //     children: [
-            //       IconButton(
-            //         icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
-            //         onPressed: () => Navigator.pop(context),
-            //       ),
-            //       const SizedBox(width: 8),
-            //       const Text(
-            //         'Preview Image',
-            //         style: TextStyle(
-            //           fontSize: 18,
-            //           fontWeight: FontWeight.w600,
-            //           color: Colors.black87,
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
             Expanded(
               child: Container(
                 margin: const EdgeInsets.all(8),
@@ -106,8 +76,11 @@ class PreviewScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(context, imagePath);
+                        onPressed: () async {
+                          final pdfFile = await generatePdfFromImage(imagePath);
+                          debugPrint("PDF created: ${pdfFile.path}");
+
+                          Navigator.pop(context, pdfFile.path);
                         },
                         child: const Text(
                           'Confirm',
