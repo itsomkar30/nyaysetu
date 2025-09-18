@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../core/services/image_to_pdf_service.dart';
-
 class PreviewScreen extends StatelessWidget {
   final String imagePath;
 
@@ -76,11 +74,8 @@ class PreviewScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TextButton(
-                        onPressed: () async {
-                          final pdfFile = await generatePdfFromImage(imagePath);
-                          debugPrint("PDF created: ${pdfFile.path}");
-
-                          Navigator.pop(context, pdfFile.path);
+                        onPressed: () {
+                          Navigator.pop(context, imagePath);
                         },
                         child: const Text(
                           'Confirm',

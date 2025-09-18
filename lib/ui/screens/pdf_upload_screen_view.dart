@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'analysis_screen_view.dart';
 import 'camera_capture_screen.dart';
+import '../../core/services/ocr_service.dart';
 
 class UploadScreen extends StatefulWidget {
   @override
@@ -69,9 +70,45 @@ class _UploadScreenState extends State<UploadScreen>
       filePath = selectedFilePath;
       fileName = selectedFileName!;
     } else if (cameraImagePath != null) {
-      filePath = cameraImagePath;
-      // fileName = 'Camera_Image_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      fileName = 'sam_image.pdf';
+      try {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const AlertDialog(
+            content: Row(
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 16),
+                Text('Processing image...'),
+              ],
+            ),
+          ),
+        );
+        
+        print('Starting OCR processing for: $cameraImagePath');
+        print('File extension: ${cameraImagePath!.split('.').last}');
+        
+        // Ensure we have an image file, not a PDF
+        if (cameraImagePath!.endsWith('.pdf')) {
+          throw Exception('Expected image file but got PDF: $cameraImagePath');
+        }
+        
+        filePath = await OCRService.createPDFFromImageWithText(cameraImagePath!);
+        fileName = 'OCR_Document_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        print('OCR PDF created at: $filePath');
+        
+        Navigator.of(context).pop();
+      } catch (e) {
+        Navigator.of(context).pop();
+        print('OCR Error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error processing image: ${e.toString()}'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
     }
     
     if (filePath != null && fileName != null) {
