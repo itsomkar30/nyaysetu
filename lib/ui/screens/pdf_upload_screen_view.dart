@@ -442,7 +442,7 @@ class _CameraButtonState extends State<_CameraButton>
                 },
                 icon: Icon(Icons.camera_alt, color: green),
                 label: Text(
-                  widget.hasCameraImage ? 'Photo Captured ✓' : 'Open Camera & Take Photo',
+                  widget.hasCameraImage ? 'Photo Captured' : 'Open Camera & Take Photo',
                   style: TextStyle(
                     color: green,
                     fontSize: 16,
